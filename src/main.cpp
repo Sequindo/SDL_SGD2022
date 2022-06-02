@@ -1,3 +1,5 @@
+//SDL game demo. Initial version.
+
 #include <SDL2/SDL.h>
 #include <chrono>
 #include <cstdint>
