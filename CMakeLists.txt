@@ -9,4 +9,5 @@ include_directories(${SDL2_INCLUDE_DIRS})
 
 file(GLOB_RECURSE SGD_proj_SOURCES "src/*.cpp")
 add_executable(SGD_proj ${SGD_proj_SOURCES})
+target_include_directories(SGD_proj PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_link_libraries(SGD_proj ${SDL2_LIBRARIES})
