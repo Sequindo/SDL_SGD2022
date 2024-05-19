@@ -1,6 +1,7 @@
 #include "game.hpp"
 
 #include "SDL.h"
+#include "SDL_image.h"
 #include <iostream>
 
 Game::Game() {
@@ -24,6 +25,15 @@ void Game::init(bool fullscreen) {
             SDL_WINDOW_SHOWN);
         
         renderer = SDL_CreateRenderer(window, -1, 0);
+        {
+            SDL_Surface *tmpSurface = IMG_Load("../resources/spritesheets/at-rest-facing-right-x720-y512-per-frame.png");
+            cowRestTexture = SDL_CreateTextureFromSurface(renderer, tmpSurface);
+            SDL_FreeSurface(tmpSurface);
+
+            tmpSurface = IMG_Load("../resources/cowspritesheetx=720pxY=512px.png");
+            cowMovingTexture = SDL_CreateTextureFromSurface(renderer, tmpSurface);
+            SDL_FreeSurface(tmpSurface);
+        }
     } else {
         std::cerr << SDL_GetError() << std::endl;
         isGameRunning = false;
@@ -49,6 +59,8 @@ void Game::update() {
 void Game::render() {
     SDL_RenderClear(renderer);
     //here we add stuff for rendering
+    SDL_RenderCopy(renderer, cowRestTexture, nullptr, nullptr);
+    //end
     SDL_RenderPresent(renderer);
 }
 
