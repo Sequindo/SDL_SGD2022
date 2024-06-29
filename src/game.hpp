@@ -3,7 +3,6 @@
 
 #define COW_MOVING_FRAME_ROWS 4
 #define COW_MOVING_FRAME_COLS 4
-
 #define COW_RESTING_FRAME_ROWS 4
 #define COW_RESTING_FRAME_COLS 3
 
@@ -29,7 +28,13 @@ namespace GameConstants {
     inline const uint32_t playerEntityH = 128;
     inline const uint32_t playerEntityW = 180;
 
-    inline const uint32_t minTimeBetweenAnimationRefresh = 50u;
+    // Animation - related stuff
+    inline const uint32_t maxTimeBetweenAnimationRefresh = 100u;
+    inline const uint32_t minTimeBetweenAnimationRefresh = 1u;
+    inline const uint32_t animationFreqStep = 16u;
+
+    // Physics - related stuff
+    inline const uint32_t playerAcceleration = 2u;
 }
 
 class GameState {
@@ -38,18 +43,36 @@ public:
   double dt;
 
   GameState() = default;
-
   GameState(double fps) {
     this->fps = fps;
     dt = 1.0 / fps;
   };
+};
 
-  static GameState physics(const GameState &gs) {
-    GameState game_state = gs;
+enum class AccelerationVec {
+  HORIZONTAL_INC = 0,
+  HORIZONTAL_DEC,
+  VERTICAL_INC,
+  VERTICAL_DEC,
+  NONE
+};
 
-    // logic for updating game state
-    return game_state;
-  }
+class PhysicStateAndMetadata {
+  AccelerationVec accVec = AccelerationVec::NONE;
+  uint32_t prevTicks;
+  uint32_t dtTicks;
+
+  uint32_t animationSpeed = 40u; // min ticks between updating player sprite
+  uint32_t verticalSpeed = 0u;
+  uint32_t horizontalSpeed = 0u;
+
+public:
+  PhysicStateAndMetadata() = default;
+  void iterationIvoke();
+  inline void setAccVec(AccelerationVec other) { this->accVec = other; }
+  void handleAcceleration();
+  inline uint32_t getAnimationSpeed() { return this->animationSpeed; }
+  inline bool isPlayerMoving() { return !(verticalSpeed || horizontalSpeed); }
 };
 
 class Game {
@@ -63,15 +86,16 @@ public:
     void clear();
     bool gameRunning();
 private:
-    bool isGameRunning = true;
-    std::unique_ptr<CowEntity> playerEntity = nullptr;
+  PhysicStateAndMetadata physicState{};
+  bool isGameRunning = true;
+  std::unique_ptr<CowEntity> playerEntity = nullptr;
 
-    //SDL stuff
-    SDL_Window *window = nullptr;
-    SDL_Renderer *renderer = nullptr;
+  // SDL stuff
+  SDL_Window *window = nullptr;
+  SDL_Renderer *renderer = nullptr;
 
-    GameTexture cowRestTexture{};
-    GameTexture cowMovingTexture{};
+  GameTexture cowRestTexture{};
+  GameTexture cowMovingTexture{};
 };
 
 #endif

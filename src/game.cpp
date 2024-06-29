@@ -66,23 +66,23 @@ void Game::handleEvents() {
     case SDL_KEYDOWN:
       switch (event.key.keysym.sym) { // Changes in acceleration
       case SDLK_LEFT:
-        playerEntity->setCowMoving();
+        physicState.setAccVec(AccelerationVec::HORIZONTAL_DEC);
         break;
       case SDLK_RIGHT:
-        playerEntity->setCowMoving();
+        physicState.setAccVec(AccelerationVec::HORIZONTAL_INC);
         break;
       case SDLK_UP:
-        playerEntity->setCowMoving();
+        physicState.setAccVec(AccelerationVec::VERTICAL_DEC);
         break;
       case SDLK_DOWN:
-        playerEntity->setCowMoving();
+        physicState.setAccVec(AccelerationVec::VERTICAL_INC);
         break;
       default:
         break;
       }
       break;
     case SDL_KEYUP:
-      playerEntity->setCowResting();
+      physicState.setAccVec(AccelerationVec::NONE);
       break;
     case SDL_QUIT:
       isGameRunning = false;
@@ -93,9 +93,12 @@ void Game::handleEvents() {
 }
 
 void Game::update(uint32_t &animationTicks) {
-  if (animationTicks < GameConstants::minTimeBetweenAnimationRefresh) {
+  physicState.isPlayerMoving() ? playerEntity->setCowMoving()
+                               : playerEntity->setCowResting();
+  if (animationTicks < this->physicState.getAnimationSpeed()) {
     return;
   }
+  physicState.iterationIvoke();
   playerEntity->updateCowSrcRect();
   animationTicks = 0u;
 }
@@ -103,7 +106,7 @@ void Game::update(uint32_t &animationTicks) {
 void Game::render() {
     SDL_RenderClear(renderer);
     // here we add stuff for rendering
-    // TEST: render a player
+    // Render a player
     SDL_RenderCopy(renderer, playerEntity->getCowTexture()->getTexture(),
                    &playerEntity->getSrcRect(), &playerEntity->getDstRect());
     //end
@@ -116,6 +119,43 @@ void Game::clear() {
     SDL_Quit();
 }
 
-bool Game::gameRunning() {
-    return isGameRunning;
+bool Game::gameRunning() { return isGameRunning; }
+
+void PhysicStateAndMetadata::iterationIvoke() {
+  // Check dt (time) for calculations
+  auto ticks = SDL_GetTicks();
+  this->dtTicks = ticks - prevTicks;
+  prevTicks = ticks;
+
+  handleAcceleration();
+}
+
+void PhysicStateAndMetadata::handleAcceleration() {
+  // Update animation speed
+  printf("Current animation set set at %du\n", this->animationSpeed);
+  if (accVec != AccelerationVec::NONE) {
+    if (animationSpeed <= GameConstants::animationFreqStep) {
+      animationSpeed = GameConstants::minTimeBetweenAnimationRefresh;
+    } else {
+      this->animationSpeed =
+          std::max<uint32_t>(GameConstants::minTimeBetweenAnimationRefresh,
+                             animationSpeed - GameConstants::animationFreqStep);
+    }
+  } else {
+    this->animationSpeed =
+        std::min<uint32_t>(GameConstants::maxTimeBetweenAnimationRefresh,
+                           animationSpeed + GameConstants::animationFreqStep);
+  }
+
+  // Update player speed
+  switch (accVec) {
+  case AccelerationVec::HORIZONTAL_INC:
+    break;
+  case AccelerationVec::HORIZONTAL_DEC:
+    break;
+  case AccelerationVec::VERTICAL_INC:
+    break;
+  case AccelerationVec::VERTICAL_DEC:
+    break;
+  }
 }

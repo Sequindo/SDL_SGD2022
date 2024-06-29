@@ -16,8 +16,6 @@ int main() {
   uint32_t prevTicks = SDL_GetTicks();
   uint32_t currTicks = 0u;
   while (game->gameRunning()) {
-    GameState newGameState = GameState::physics(gameState);
-    gameState = newGameState;
     game->handleEvents();
     currTicks = SDL_GetTicks();
     ticksAccumulator += currTicks - prevTicks;
