@@ -63,11 +63,32 @@ void Game::handleEvents() {
     SDL_Event event;
     SDL_PollEvent(&event);
     switch (event.type) {
-        case SDL_QUIT:
-            isGameRunning = false;
-            break;
-        default:
-            break;
+    case SDL_KEYDOWN:
+      switch (event.key.keysym.sym) { // Changes in acceleration
+      case SDLK_LEFT:
+        playerEntity->setCowMoving();
+        break;
+      case SDLK_RIGHT:
+        playerEntity->setCowMoving();
+        break;
+      case SDLK_UP:
+        playerEntity->setCowMoving();
+        break;
+      case SDLK_DOWN:
+        playerEntity->setCowMoving();
+        break;
+      default:
+        break;
+      }
+      break;
+    case SDL_KEYUP:
+      playerEntity->setCowResting();
+      break;
+    case SDL_QUIT:
+      isGameRunning = false;
+      break;
+    default:
+      break;
     }
 }
 

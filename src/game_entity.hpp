@@ -13,6 +13,7 @@ typedef struct SDL_Rect SDL_Rect;
 class GameTexture;
 
 class GameEntity {
+  friend class CowEntity;
   SDL_Rect srcRect{};
   SDL_Rect dstRect{};
   std::vector<GameTexture *> entityTextures{};

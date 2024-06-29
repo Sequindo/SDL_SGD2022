@@ -40,9 +40,23 @@ void GameEntity::updateSrcRect(uint32_t textureIdx) {
   }
 }
 
-void CowEntity::setCowResting() { this->textureIndex = 0u; }
+void CowEntity::setCowResting() {
+  if (this->textureIndex == 0u) {
+    return;
+  }
+  this->textureIndex = 0u;
+  this->currentRow = 0u;
+  this->currentCol = 0u;
+}
 
-void CowEntity::setCowMoving() { this->textureIndex = 1u; }
+void CowEntity::setCowMoving() {
+  if (this->textureIndex == 1u) {
+    return;
+  }
+  this->textureIndex = 1u;
+  this->currentRow = 0u;
+  this->currentCol = 0u;
+}
 
 GameTexture *CowEntity::getCowTexture() {
   return this->getTexture(textureIndex);
