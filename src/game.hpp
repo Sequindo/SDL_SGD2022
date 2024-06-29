@@ -15,6 +15,26 @@ namespace GameConstants {
     inline const int height = 768; 
 }
 
+class GameState {
+public:
+  double fps;
+  double dt;
+
+  GameState() = default;
+
+  GameState(double fps) {
+    this->fps = fps;
+    dt = 1.0 / fps;
+  };
+
+  static GameState physics(const GameState &gs) {
+    GameState game_state = gs;
+
+    // logic for updating game state
+    return game_state;
+  }
+};
+
 class Game {
 public:
     Game();
