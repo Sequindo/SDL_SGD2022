@@ -1,0 +1,46 @@
+#ifndef game_entity_hpp
+#define game_entity_hpp
+
+#include <vector>
+
+#include "SDL_rect.h"
+
+#define START_FRAME_IDX 1u
+
+struct SDL_Rect;
+typedef struct SDL_Rect SDL_Rect;
+
+class GameTexture;
+
+class GameEntity {
+  SDL_Rect srcRect{};
+  SDL_Rect dstRect{};
+  std::vector<GameTexture *> entityTextures{};
+
+  uint32_t currentFrame = START_FRAME_IDX;
+
+public:
+  GameEntity(uint32_t singleFrameH, uint32_t singleFrameW, uint32_t entityH,
+             uint32_t entityW);
+  void placeTextureForEntity(GameTexture *gameTexturePtr);
+  GameTexture *getTexture(uint32_t idx);
+  const SDL_Rect &getSrcRect();
+  const SDL_Rect &getDstRect();
+  void updateSrcRect(uint32_t textureIdx);
+};
+
+class CowEntity : public GameEntity {
+  // Assume - first texture in vector for rest position, next one for moving
+  uint32_t textureIndex = 0u;
+
+public:
+  CowEntity(uint32_t singleFrameH, uint32_t singleFrameW, uint32_t entityH,
+            uint32_t entityW)
+      : GameEntity(singleFrameH, singleFrameW, entityH, entityW) {}
+  void setCowMoving();
+  void setCowResting();
+  GameTexture *getCowTexture();
+  void updateCowSrcRect();
+};
+
+#endif

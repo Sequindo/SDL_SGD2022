@@ -15,8 +15,8 @@ int main() {
   while (game->gameRunning()) {
     GameState newGameState = GameState::physics(gameState);
     gameState = newGameState;
-    // game->handleEvents();
-    // game->update();
+    game->handleEvents();
+    game->update();
     bool frameskip = false;
     auto nextTime =
         currentTime + std::chrono::microseconds(

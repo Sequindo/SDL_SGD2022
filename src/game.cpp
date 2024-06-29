@@ -26,14 +26,30 @@ void Game::init(bool fullscreen) {
         
         renderer = SDL_CreateRenderer(window, -1, 0);
         {
-            SDL_Surface *tmpSurface = IMG_Load("../resources/spritesheets/at-rest-facing-right-x720-y512-per-frame.png");
-            cowRestTexture = SDL_CreateTextureFromSurface(renderer, tmpSurface);
-            SDL_FreeSurface(tmpSurface);
+          // Player texture initialization
+          SDL_Surface *tmpSurface =
+              IMG_Load("../resources/spritesheets/"
+                       "at-rest-facing-right-x720-y512-per-frame.png");
+          cowRestTexture.setTexture(
+              SDL_CreateTextureFromSurface(renderer, tmpSurface));
+          cowRestTexture.setFrameCount(COW_RESTING_FRAME_NUM);
+          SDL_FreeSurface(tmpSurface);
 
-            tmpSurface = IMG_Load("../resources/cowspritesheetx=720pxY=512px.png");
-            cowMovingTexture = SDL_CreateTextureFromSurface(renderer, tmpSurface);
-            SDL_FreeSurface(tmpSurface);
+          tmpSurface =
+              IMG_Load("../resources/cowspritesheetx=720pxY=512px.png");
+          cowMovingTexture.setTexture(
+              SDL_CreateTextureFromSurface(renderer, tmpSurface));
+          cowRestTexture.setFrameCount(COW_MOVING_FRAME_NUM);
+          SDL_FreeSurface(tmpSurface);
         }
+
+        // Initialize player
+        this->playerEntity = std::make_unique<CowEntity>(
+            GameConstants::playerFrameH, GameConstants::playerFrameW,
+            GameConstants::playerEntityH, GameConstants::playerEntityW);
+        playerEntity->placeTextureForEntity(&cowRestTexture);
+        playerEntity->placeTextureForEntity(&cowMovingTexture);
+
     } else {
         std::cerr << SDL_GetError() << std::endl;
         isGameRunning = false;
@@ -52,14 +68,14 @@ void Game::handleEvents() {
     }
 }
 
-void Game::update() {
-
-}
+void Game::update() { playerEntity->updateCowSrcRect(); }
 
 void Game::render() {
     SDL_RenderClear(renderer);
-    //here we add stuff for rendering
-    SDL_RenderCopy(renderer, cowRestTexture, nullptr, nullptr);
+    // here we add stuff for rendering
+    // TEST: render a player
+    SDL_RenderCopy(renderer, playerEntity->getCowTexture()->getTexture(),
+                   &playerEntity->getSrcRect(), &playerEntity->getDstRect());
     //end
     SDL_RenderPresent(renderer);
 }
