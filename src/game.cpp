@@ -4,9 +4,11 @@
 #include "SDL.h"
 #include "SDL_image.h"
 #include <iostream>
+#include <random>
 
 Game::Game() {
-    this->init(false);
+  srand(time(nullptr));
+  this->init(false);
 }
 
 Game::~Game() {}
@@ -72,7 +74,7 @@ void Game::init(bool fullscreen) {
             GameConstants::floorEntitySquare, GameConstants::floorEntitySquare);
         slaughterhouseEntity->placeTextureForEntity(
             &slaughterhouseAssetsTexture);
-        slaughterhouseEntity->offsetSrcRect(107, 39);
+        slaughterhouseEntity->offsetSrcRect(SLAUGHTERHOUSE_FLOOR_TILE_OFFSET);
 
         numFloorTilesColumn =
             static_cast<uint32_t>(GameConstants::height /
@@ -88,6 +90,13 @@ void Game::init(bool fullscreen) {
         auto totalTilesNum = numFloorTilesRow * numFloorTilesColumn;
         this->floorRectangles.resize(totalTilesNum);
         resetFlooring();
+
+        // Initialize blade entity (will be spawned multiple times)
+        this->bladeEntity = std::make_unique<GameEntity>(
+            GameConstants::bladeFrameSquare, GameConstants::bladeFrameSquare,
+            GameConstants::bladeEntitySquare, GameConstants::bladeEntitySquare);
+        bladeEntity->placeTextureForEntity(&slaughterhouseAssetsTexture);
+        bladeEntity->offsetSrcRect(SLAUGHTERHOUSE_BLADE_OFFSET);
 
     } else {
         std::cerr << SDL_GetError() << std::endl;
@@ -112,6 +121,9 @@ void Game::handleEvents() {
         break;
       case SDLK_DOWN:
         physicState.setAccVecVertical(AccelerationDirection::FORWARD);
+        break;
+      case SDLK_q:
+        allowedToQuit = true;
         break;
       default:
         break;
@@ -154,6 +166,89 @@ void Game::updateFlooring() {
       rec.x--;
     }
   }
+  for (auto &obstacle : obstacles) {
+    obstacle.x--;
+  }
+  if (false == this->areAnyObstaclesPresent()) {
+    this->generateObstaclesPage();
+  }
+  this->currAngle += 5.0;
+  if (360.0 == currAngle) {
+    currAngle = 0.0;
+  }
+}
+
+std::vector<std::pair<uint32_t, uint32_t>> Game::populateObstaclesCoords() {
+  std::vector<std::pair<uint32_t, uint32_t>> obstacleCoords{};
+  obstacleCoords.reserve(obstaclesNum);
+
+  auto isOverlapping = [=, &obstacleCoords](uint32_t _xCoord,
+                                            uint32_t _yCoord) -> bool {
+    for (const auto &[existingX, existingY] : obstacleCoords) {
+      if (existingX < _xCoord &&
+          _xCoord < existingX + GameConstants::bladeEntitySquare) {
+        return true;
+      } else if (existingY < _yCoord &&
+                 _yCoord < existingY + GameConstants::bladeEntitySquare) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  for (uint32_t i = 0; i < obstaclesNum; i++) {
+    uint32_t xCoord, yCoord;
+    do {
+      xCoord = rand() % GameConstants::maxBladeHorizontalThreshold;
+      yCoord = rand() % GameConstants::maxBladeVerticalThreshold;
+    } while (isOverlapping(xCoord, yCoord));
+    obstacleCoords.emplace_back(xCoord, yCoord);
+  }
+  return obstacleCoords;
+}
+
+// The idea is to generate a set of obstacles, wait until all of them are gone
+// from the screen, and then repeat it
+void Game::generateObstaclesPage() {
+  obstaclesNum = rand() % 5;
+  obstacles.clear();
+  obstacles.reserve(obstaclesNum);
+  auto coordsVec = this->populateObstaclesCoords();
+  for (uint32_t i = 0; i < obstaclesNum; i++) {
+    auto &emplaced = obstacles.emplace_back();
+    emplaced.h = GameConstants::bladeEntitySquare;
+    emplaced.w = GameConstants::bladeEntitySquare;
+    emplaced.x = GameConstants::width + coordsVec.at(i).first;
+    emplaced.y = coordsVec.at(i).second;
+  }
+}
+
+void Game::checkAndRemoveDeadObstacles() {
+  for (uint32_t i = 0; i < obstaclesNum; i++) {
+    if (obstacles.at(i).w < GameConstants::bladeEntityLeftThreshold) {
+      obstacles[i].h = 0u;
+      obstacles[i].w = 0u; // basically, they are disabled and it's much cheaper
+    }
+  }
+}
+
+bool Game::areAnyObstaclesPresent() {
+  for (uint32_t i = 0; i < obstaclesNum; i++) {
+    if (obstacles.at(i).w || obstacles.at(i).h) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool Game::hasPlayerGotKilled() {
+  const auto &playerRect = playerEntity->getDstRect();
+  for (const auto &obstacleRect : obstacles) {
+    if (SDL_HasIntersection(&obstacleRect, &playerRect)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void Game::update(uint32_t &animationTicks) {
@@ -161,6 +256,10 @@ void Game::update(uint32_t &animationTicks) {
       std::min<uint32_t>(this->physicState.getAnimationSpeed(),
                          GameConstants::floorAnimationTicks);
   if (animationTicks < minTicksRequired) {
+    return;
+  }
+  if (hasPlayerGotKilled()) {
+    isGameRunning = false;
     return;
   }
   physicState.isPlayerMoving() ? playerEntity->setCowMoving()
@@ -182,18 +281,31 @@ void Game::update(uint32_t &animationTicks) {
 
 void Game::render() {
   SDL_RenderClear(renderer);
-  // Render flooring
-  for (const auto &dstRec : this->floorRectangles) {
-    SDL_RenderCopy(
-        renderer,
-        slaughterhouseEntity->getTexture(SINGLE_TEXTURE_IDX)->getTexture(),
-        &slaughterhouseEntity->getSrcRect(), &dstRec);
-  }
+  if (!isGameRunning) {
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderClear(renderer);
+  } else {
+    // Render flooring
+    for (const auto &dstRec : this->floorRectangles) {
+      SDL_RenderCopy(
+          renderer,
+          slaughterhouseEntity->getTexture(SINGLE_TEXTURE_IDX)->getTexture(),
+          &slaughterhouseEntity->getSrcRect(), &dstRec);
+    }
+    // Render obstacles
+    for (const auto &dstRec : this->obstacles) {
+      SDL_Point p{(GameConstants::bladeEntitySquare + dstRec.x) / 2,
+                  (GameConstants::bladeEntitySquare + dstRec.y) / 2};
+      SDL_RenderCopyEx(
+          renderer, bladeEntity->getTexture(SINGLE_TEXTURE_IDX)->getTexture(),
+          &bladeEntity->getSrcRect(), &dstRec, currAngle, &p, SDL_FLIP_NONE);
+    }
 
-  // Render a player
-  SDL_RenderCopy(renderer, playerEntity->getCowTexture()->getTexture(),
-                 &playerEntity->getSrcRect(), &playerEntity->getDstRect());
-  // end
+    // Render a player
+    SDL_RenderCopy(renderer, playerEntity->getCowTexture()->getTexture(),
+                   &playerEntity->getSrcRect(), &playerEntity->getDstRect());
+    // end
+  }
   SDL_RenderPresent(renderer);
 }
 
@@ -204,6 +316,7 @@ void Game::clear() {
 }
 
 bool Game::gameRunning() { return isGameRunning; }
+bool Game::mayQuit() { return this->allowedToQuit; }
 
 void PhysicStateAndMetadata::iterationIvoke() {
   // Check dt (time) for calculations

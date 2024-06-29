@@ -7,6 +7,8 @@
 #define COW_RESTING_FRAME_COLS 3
 #define SLAUGHTERHOUSE_FLOOR_FRAME_ROWS 1
 #define SLAUGHTERHOUSE_FLOOR_FRAME_COLS 1
+#define SLAUGHTERHOUSE_BLADE_FRAME_ROWS 1
+#define SLAUGHTERHOUSE_BLADE_FRAME_COLS 1
 #define SINGLE_TEXTURE_IDX 0
 
 #include <memory>
@@ -72,15 +74,28 @@ public:
     void render();
     void clear();
     bool gameRunning();
+    bool mayQuit();
 
     void resetFlooring();
     void updateFlooring();
+    std::vector<std::pair<uint32_t, uint32_t>> populateObstaclesCoords();
+    void generateObstaclesPage();
+    void checkAndRemoveDeadObstacles();
+    bool areAnyObstaclesPresent();
+    bool hasPlayerGotKilled();
 
   private:
     PhysicStateAndMetadata physicState{};
     bool isGameRunning = true;
+    bool allowedToQuit = false;
     std::unique_ptr<CowEntity> playerEntity = nullptr;
     std::unique_ptr<GameEntity> slaughterhouseEntity = nullptr;
+    std::unique_ptr<GameEntity> bladeEntity = nullptr;
+
+    // Logic for obstacles
+    std::vector<SDL_Rect> obstacles{};
+    uint32_t obstaclesNum{0u};
+    double currAngle{0u};
 
     // SDL stuff
     SDL_Window *window = nullptr;

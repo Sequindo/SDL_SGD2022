@@ -15,7 +15,7 @@ int main() {
   uint32_t ticksAccumulator = 0u;
   uint32_t prevTicks = SDL_GetTicks();
   uint32_t currTicks = 0u;
-  while (game->gameRunning()) {
+  while (game->gameRunning() && false == game->mayQuit()) {
     game->handleEvents();
     currTicks = SDL_GetTicks();
     ticksAccumulator += currTicks - prevTicks;
