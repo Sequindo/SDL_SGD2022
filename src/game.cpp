@@ -104,41 +104,35 @@ void Game::init(bool fullscreen) {
     }
 }
 
+void Game::handleKeyboardInput() {
+  int length;
+  const uint8_t *keyboardArr = SDL_GetKeyboardState(&length);
+  if (keyboardArr[SDL_SCANCODE_LEFT]) {
+    physicState.setAccVecHorizontal(AccelerationDirection::BACKWARD);
+  } else if (keyboardArr[SDL_SCANCODE_RIGHT]) {
+    physicState.setAccVecHorizontal(AccelerationDirection::FORWARD);
+  } else if (keyboardArr[SDL_SCANCODE_UP]) {
+    physicState.setAccVecVertical(AccelerationDirection::BACKWARD);
+  } else if (keyboardArr[SDL_SCANCODE_DOWN]) {
+    physicState.setAccVecVertical(AccelerationDirection::FORWARD);
+
+  } else { // aka keyup
+    physicState.setAccVecHorizontal(AccelerationDirection::STALL);
+    physicState.setAccVecVertical(AccelerationDirection::STALL);
+  }
+}
+
 void Game::handleEvents() {
-    SDL_Event event;
-    SDL_PollEvent(&event);
-    switch (event.type) {
-    case SDL_KEYDOWN:
-      switch (event.key.keysym.sym) { // Changes in acceleration
-      case SDLK_LEFT:
-        physicState.setAccVecHorizontal(AccelerationDirection::BACKWARD);
-        break;
-      case SDLK_RIGHT:
-        physicState.setAccVecHorizontal(AccelerationDirection::FORWARD);
-        break;
-      case SDLK_UP:
-        physicState.setAccVecVertical(AccelerationDirection::BACKWARD);
-        break;
-      case SDLK_DOWN:
-        physicState.setAccVecVertical(AccelerationDirection::FORWARD);
-        break;
-      case SDLK_q:
-        allowedToQuit = true;
-        break;
-      default:
-        break;
-      }
-      break;
-    case SDL_KEYUP:
-      physicState.setAccVecHorizontal(AccelerationDirection::STALL);
-      physicState.setAccVecVertical(AccelerationDirection::STALL);
-      break;
-    case SDL_QUIT:
-      isGameRunning = false;
-      break;
-    default:
-      break;
-    }
+  this->handleKeyboardInput();
+  SDL_Event event;
+  SDL_PollEvent(&event);
+  switch (event.type) {
+  case SDL_QUIT:
+    isGameRunning = false;
+    break;
+  default:
+    break;
+  }
 }
 
 void Game::resetFlooring() {
@@ -294,11 +288,12 @@ void Game::render() {
     }
     // Render obstacles
     for (const auto &dstRec : this->obstacles) {
-      SDL_Point p{(GameConstants::bladeEntitySquare + dstRec.x) / 2,
-                  (GameConstants::bladeEntitySquare + dstRec.y) / 2};
+      // SDL_Point p{(GameConstants::bladeEntitySquare + dstRec.x) / 2,
+      //             (GameConstants::bladeEntitySquare + dstRec.y) / 2};
       SDL_RenderCopyEx(
           renderer, bladeEntity->getTexture(SINGLE_TEXTURE_IDX)->getTexture(),
-          &bladeEntity->getSrcRect(), &dstRec, currAngle, &p, SDL_FLIP_NONE);
+          &bladeEntity->getSrcRect(), &dstRec, currAngle, nullptr,
+          SDL_FLIP_NONE);
     }
 
     // Render a player
@@ -316,7 +311,6 @@ void Game::clear() {
 }
 
 bool Game::gameRunning() { return isGameRunning; }
-bool Game::mayQuit() { return this->allowedToQuit; }
 
 void PhysicStateAndMetadata::iterationIvoke() {
   // Check dt (time) for calculations

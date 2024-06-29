@@ -69,12 +69,12 @@ public:
     Game();
     ~Game();
     void init(bool fullscreen);
+    void handleKeyboardInput();
     void handleEvents();
     void update(uint32_t &animationTicks);
     void render();
     void clear();
     bool gameRunning();
-    bool mayQuit();
 
     void resetFlooring();
     void updateFlooring();
@@ -87,7 +87,6 @@ public:
   private:
     PhysicStateAndMetadata physicState{};
     bool isGameRunning = true;
-    bool allowedToQuit = false;
     std::unique_ptr<CowEntity> playerEntity = nullptr;
     std::unique_ptr<GameEntity> slaughterhouseEntity = nullptr;
     std::unique_ptr<GameEntity> bladeEntity = nullptr;
