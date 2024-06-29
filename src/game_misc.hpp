@@ -18,7 +18,7 @@ inline const uint32_t playerEntityW = 180;
 
 // Slaughterhouse flooring - related constants
 inline const uint32_t floorFrameSquare = 860;
-inline const uint32_t floorEntitySquare = 86;
+inline const uint32_t floorEntitySquare = 172;
 
 // Slaughterhouse blades - related constants
 inline const uint32_t bladeFrameSquare = 1000;

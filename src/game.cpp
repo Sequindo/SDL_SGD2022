@@ -157,16 +157,16 @@ void Game::updateFlooring() {
     resetFlooring();
   } else {
     for (auto &rec : floorRectangles) {
-      rec.x--;
+      rec.x = rec.x-3;
     }
   }
   for (auto &obstacle : obstacles) {
-    obstacle.x--;
+    obstacle.x = obstacle.x-3;
   }
   if (false == this->areAnyObstaclesPresent()) {
     this->generateObstaclesPage();
   }
-  this->currAngle += 5.0;
+  this->currAngle += 1.0;
   if (360.0 == currAngle) {
     currAngle = 0.0;
   }
