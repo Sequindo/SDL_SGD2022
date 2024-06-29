@@ -13,8 +13,8 @@ namespace GameConstants {
     inline const uint32_t playerEntityW = 180;
 
     // Slaughterhouse flooring - related constants
-    inline const uint32_t floorFrameSquare = 856;
-    inline const uint32_t floorEntitySquare = 128;
+    inline const uint32_t floorFrameSquare = 860;
+    inline const uint32_t floorEntitySquare = 86;
 
     // Animation - related stuff
     inline const uint32_t maxTimeBetweenAnimationRefresh = 100u;

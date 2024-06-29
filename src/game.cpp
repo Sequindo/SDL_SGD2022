@@ -74,6 +74,26 @@ void Game::init(bool fullscreen) {
             &slaughterhouseAssetsTexture);
         slaughterhouseEntity->offsetSrcRect(107, 39);
 
+        auto numFloorTilesRow =
+            static_cast<uint32_t>(GameConstants::height /
+                                  GameConstants::floorEntitySquare) +
+            1;
+        auto numFloorTilesColumn =
+            static_cast<uint32_t>(GameConstants::width /
+                                  GameConstants::floorEntitySquare) +
+            1;
+        auto totalTilesNum = numFloorTilesRow * numFloorTilesColumn;
+        this->floorRectangles.resize(totalTilesNum);
+        auto recIdx = 0u;
+        for (uint32_t y = 0; y < numFloorTilesRow; y++) {
+          for (uint32_t x = 0; x < numFloorTilesColumn; x++) {
+            auto &rec = this->floorRectangles.at(recIdx++);
+            rec.y = y * GameConstants::floorEntitySquare;
+            rec.x = x * GameConstants::floorEntitySquare;
+            rec.h = rec.w = GameConstants::floorEntitySquare;
+          }
+        }
+
     } else {
         std::cerr << SDL_GetError() << std::endl;
         isGameRunning = false;
@@ -130,18 +150,11 @@ void Game::update(uint32_t &animationTicks) {
 void Game::render() {
   SDL_RenderClear(renderer);
   // Render flooring
-  for (uint32_t y = 0u; y < GameConstants::height;
-       y += GameConstants::floorEntitySquare) {
-    for (uint32_t x = 0u; x < GameConstants::width;
-         x += GameConstants::floorEntitySquare) {
-      slaughterhouseEntity->updateDstRectCoords(x, y);
-      SDL_RenderCopy(
-          renderer,
-          slaughterhouseEntity->getTexture(SINGLE_TEXTURE_IDX)->getTexture(),
-          &slaughterhouseEntity->getSrcRect(),
-          &slaughterhouseEntity->getDstRect());
-      SDL_RenderPresent(renderer);
-    }
+  for (const auto &dstRec : this->floorRectangles) {
+    SDL_RenderCopy(
+        renderer,
+        slaughterhouseEntity->getTexture(SINGLE_TEXTURE_IDX)->getTexture(),
+        &slaughterhouseEntity->getSrcRect(), &dstRec);
   }
 
   // Render a player

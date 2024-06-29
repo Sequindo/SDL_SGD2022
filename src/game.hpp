@@ -86,6 +86,7 @@ private:
   GameTexture cowRestTexture{};
   GameTexture cowMovingTexture{};
   GameTexture slaughterhouseAssetsTexture{};
+  std::vector<SDL_Rect> floorRectangles{};
 };
 
 #endif
