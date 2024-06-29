@@ -1,5 +1,6 @@
 #include "game_entity.hpp"
 #include "game_texture.hpp"
+#include "game_misc.hpp"
 
 GameEntity::GameEntity(uint32_t singleFrameH, uint32_t singleFrameW,
                        uint32_t entityH, uint32_t entityW) {
@@ -41,8 +42,15 @@ void GameEntity::updateSrcRect(uint32_t textureIdx) {
 }
 
 void GameEntity::updateDstRectCoords(int32_t dX, int32_t dY) {
-  dstRect.x += dX;
-  dstRect.y += dY;
+  auto xBuf = dstRect.x + dX;
+  auto yBuf = dstRect.y + dY;
+  if (xBuf < 0) { dstRect.x = 0u; }
+  else if (xBuf > (GameConstants::width - GameConstants::playerEntityW)) { dstRect.x = (GameConstants::width - GameConstants::playerEntityW); }
+  else dstRect.x = xBuf;
+
+  if (yBuf < 0) { dstRect.y = 0u; }
+  else if (yBuf > (GameConstants::height - GameConstants::playerEntityH)) { dstRect.y = (GameConstants::height - GameConstants::playerEntityH); }
+  else dstRect.y = yBuf;
 }
 
 void CowEntity::setCowResting() {

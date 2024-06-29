@@ -1,4 +1,5 @@
 #include "game.hpp"
+#include "game_misc.hpp"
 
 #include "SDL.h"
 #include "SDL_image.h"
