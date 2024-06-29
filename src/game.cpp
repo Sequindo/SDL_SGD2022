@@ -66,23 +66,24 @@ void Game::handleEvents() {
     case SDL_KEYDOWN:
       switch (event.key.keysym.sym) { // Changes in acceleration
       case SDLK_LEFT:
-        physicState.setAccVec(AccelerationVec::HORIZONTAL_DEC);
+        physicState.setAccVecHorizontal(AccelerationDirection::BACKWARD);
         break;
       case SDLK_RIGHT:
-        physicState.setAccVec(AccelerationVec::HORIZONTAL_INC);
+        physicState.setAccVecHorizontal(AccelerationDirection::FORWARD);
         break;
       case SDLK_UP:
-        physicState.setAccVec(AccelerationVec::VERTICAL_DEC);
+        physicState.setAccVecVertical(AccelerationDirection::BACKWARD);
         break;
       case SDLK_DOWN:
-        physicState.setAccVec(AccelerationVec::VERTICAL_INC);
+        physicState.setAccVecVertical(AccelerationDirection::FORWARD);
         break;
       default:
         break;
       }
       break;
     case SDL_KEYUP:
-      physicState.setAccVec(AccelerationVec::NONE);
+      physicState.setAccVecHorizontal(AccelerationDirection::STALL);
+      physicState.setAccVecVertical(AccelerationDirection::STALL);
       break;
     case SDL_QUIT:
       isGameRunning = false;
@@ -132,8 +133,9 @@ void PhysicStateAndMetadata::iterationIvoke() {
 
 void PhysicStateAndMetadata::handleAcceleration() {
   // Update animation speed
-  printf("Current animation set set at %du\n", this->animationSpeed);
-  if (accVec != AccelerationVec::NONE) {
+  // printf("Current animation set set at %du\n", this->animationSpeed);
+  if (accVecHorizontal != AccelerationDirection::STALL ||
+      accVecVertical != AccelerationDirection::STALL) {
     if (animationSpeed <= GameConstants::animationFreqStep) {
       animationSpeed = GameConstants::minTimeBetweenAnimationRefresh;
     } else {
@@ -148,14 +150,20 @@ void PhysicStateAndMetadata::handleAcceleration() {
   }
 
   // Update player speed
-  switch (accVec) {
-  case AccelerationVec::HORIZONTAL_INC:
+  switch (accVecHorizontal) {
+  case AccelerationDirection::FORWARD:
     break;
-  case AccelerationVec::HORIZONTAL_DEC:
+  case AccelerationDirection::BACKWARD:
     break;
-  case AccelerationVec::VERTICAL_INC:
+  default:
     break;
-  case AccelerationVec::VERTICAL_DEC:
+  }
+  switch (accVecVertical) {
+  case AccelerationDirection::FORWARD:
+    break;
+  case AccelerationDirection::BACKWARD:
+    break;
+  default:
     break;
   }
 }

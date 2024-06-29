@@ -19,6 +19,8 @@ typedef struct SDL_Window SDL_Window;
 
 class GameEntity;
 
+namespace Pos2D {}
+
 namespace GameConstants {
     inline const char* title {"Untitled Cow Gore Game"};
     inline const uint32_t width = 1366;
@@ -49,16 +51,11 @@ public:
   };
 };
 
-enum class AccelerationVec {
-  HORIZONTAL_INC = 0,
-  HORIZONTAL_DEC,
-  VERTICAL_INC,
-  VERTICAL_DEC,
-  NONE
-};
+enum class AccelerationDirection { FORWARD, BACKWARD, STALL };
 
 class PhysicStateAndMetadata {
-  AccelerationVec accVec = AccelerationVec::NONE;
+  AccelerationDirection accVecHorizontal = AccelerationDirection::STALL;
+  AccelerationDirection accVecVertical = AccelerationDirection::STALL;
   uint32_t prevTicks;
   uint32_t dtTicks;
 
@@ -69,7 +66,12 @@ class PhysicStateAndMetadata {
 public:
   PhysicStateAndMetadata() = default;
   void iterationIvoke();
-  inline void setAccVec(AccelerationVec other) { this->accVec = other; }
+  inline void setAccVecHorizontal(AccelerationDirection other) {
+    this->accVecHorizontal = other;
+  }
+  inline void setAccVecVertical(AccelerationDirection other) {
+    this->accVecVertical = other;
+  }
   void handleAcceleration();
   inline uint32_t getAnimationSpeed() { return this->animationSpeed; }
   inline bool isPlayerMoving() { return !(verticalSpeed || horizontalSpeed); }
