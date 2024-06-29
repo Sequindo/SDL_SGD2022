@@ -29,6 +29,7 @@ public:
   const SDL_Rect &getSrcRect();
   const SDL_Rect &getDstRect();
   void updateSrcRect(uint32_t textureIdx);
+  void updateDstRectCoords(int32_t dX, int32_t dY);
 };
 
 class CowEntity : public GameEntity {

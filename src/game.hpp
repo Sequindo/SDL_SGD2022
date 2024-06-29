@@ -36,7 +36,7 @@ namespace GameConstants {
     inline const uint32_t animationFreqStep = 16u;
 
     // Physics - related stuff
-    inline const uint32_t playerAcceleration = 2u;
+    inline const double playerAcceleration = 5u;
 }
 
 class GameState {
@@ -57,11 +57,11 @@ class PhysicStateAndMetadata {
   AccelerationDirection accVecHorizontal = AccelerationDirection::STALL;
   AccelerationDirection accVecVertical = AccelerationDirection::STALL;
   uint32_t prevTicks;
-  uint32_t dtTicks;
+  double dtTicks;
 
   uint32_t animationSpeed = 40u; // min ticks between updating player sprite
-  uint32_t verticalSpeed = 0u;
-  uint32_t horizontalSpeed = 0u;
+  int32_t verticalSpeed = 0u;    // may be positive or negative
+  int32_t horizontalSpeed = 0u;
 
 public:
   PhysicStateAndMetadata() = default;
@@ -75,6 +75,8 @@ public:
   void handleAcceleration();
   inline uint32_t getAnimationSpeed() { return this->animationSpeed; }
   inline bool isPlayerMoving() { return !(verticalSpeed || horizontalSpeed); }
+  inline int32_t getHorizontalSpeed() { return this->horizontalSpeed; }
+  inline int32_t getVerticalSpeed() { return this->verticalSpeed; }
 };
 
 class Game {

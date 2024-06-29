@@ -101,17 +101,18 @@ void Game::update(uint32_t &animationTicks) {
   }
   physicState.iterationIvoke();
   playerEntity->updateCowSrcRect();
+  playerEntity->updateDstRectCoords(physicState.getHorizontalSpeed(),
+                                    physicState.getVerticalSpeed());
   animationTicks = 0u;
 }
 
 void Game::render() {
-    SDL_RenderClear(renderer);
-    // here we add stuff for rendering
-    // Render a player
-    SDL_RenderCopy(renderer, playerEntity->getCowTexture()->getTexture(),
-                   &playerEntity->getSrcRect(), &playerEntity->getDstRect());
-    //end
-    SDL_RenderPresent(renderer);
+  SDL_RenderClear(renderer);
+  // Render a player
+  SDL_RenderCopy(renderer, playerEntity->getCowTexture()->getTexture(),
+                 &playerEntity->getSrcRect(), &playerEntity->getDstRect());
+  // end
+  SDL_RenderPresent(renderer);
 }
 
 void Game::clear() {
@@ -125,7 +126,7 @@ bool Game::gameRunning() { return isGameRunning; }
 void PhysicStateAndMetadata::iterationIvoke() {
   // Check dt (time) for calculations
   auto ticks = SDL_GetTicks();
-  this->dtTicks = ticks - prevTicks;
+  this->dtTicks = static_cast<double>((ticks - prevTicks) / 100.0);
   prevTicks = ticks;
 
   handleAcceleration();
@@ -133,7 +134,9 @@ void PhysicStateAndMetadata::iterationIvoke() {
 
 void PhysicStateAndMetadata::handleAcceleration() {
   // Update animation speed
-  // printf("Current animation set set at %du\n", this->animationSpeed);
+  // printf("Current animation set at %du\n", this->animationSpeed);
+  printf("Current horizontal speed set at %du\n", this->horizontalSpeed);
+  printf("Current vertical speed set at %du\n", this->verticalSpeed);
   if (accVecHorizontal != AccelerationDirection::STALL ||
       accVecVertical != AccelerationDirection::STALL) {
     if (animationSpeed <= GameConstants::animationFreqStep) {
@@ -149,21 +152,47 @@ void PhysicStateAndMetadata::handleAcceleration() {
                            animationSpeed + GameConstants::animationFreqStep);
   }
 
-  // Update player speed
+  // Update player speed and acceleration if needed
   switch (accVecHorizontal) {
   case AccelerationDirection::FORWARD:
+    this->horizontalSpeed = this->horizontalSpeed +
+                            GameConstants::playerAcceleration * this->dtTicks;
     break;
   case AccelerationDirection::BACKWARD:
+    this->horizontalSpeed = this->horizontalSpeed -
+                            GameConstants::playerAcceleration * this->dtTicks;
     break;
-  default:
+  default: // Slowing down if not accelerating (stall)
+    if (this->horizontalSpeed > 0) {
+      this->horizontalSpeed = std::max<int32_t>(
+          0, this->horizontalSpeed -
+                 GameConstants::playerAcceleration * this->dtTicks);
+    } else {
+      this->horizontalSpeed = std::min<int32_t>(
+          0, this->horizontalSpeed +
+                 GameConstants::playerAcceleration * this->dtTicks);
+    }
     break;
   }
   switch (accVecVertical) {
   case AccelerationDirection::FORWARD:
+    this->verticalSpeed =
+        this->verticalSpeed + GameConstants::playerAcceleration * this->dtTicks;
     break;
   case AccelerationDirection::BACKWARD:
+    this->verticalSpeed =
+        this->verticalSpeed - GameConstants::playerAcceleration * this->dtTicks;
     break;
-  default:
+  default: // Slowing down if not accelerating (stall)
+    if (this->verticalSpeed > 0) {
+      this->verticalSpeed = std::max<int32_t>(
+          0, this->verticalSpeed -
+                 GameConstants::playerAcceleration * this->dtTicks);
+    } else {
+      this->verticalSpeed = std::min<int32_t>(
+          0, this->verticalSpeed +
+                 GameConstants::playerAcceleration * this->dtTicks);
+    }
     break;
   }
 }

@@ -40,6 +40,11 @@ void GameEntity::updateSrcRect(uint32_t textureIdx) {
   }
 }
 
+void GameEntity::updateDstRectCoords(int32_t dX, int32_t dY) {
+  dstRect.x += dX;
+  dstRect.y += dY;
+}
+
 void CowEntity::setCowResting() {
   if (this->textureIndex == 0u) {
     return;
