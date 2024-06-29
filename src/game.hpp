@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "game_entity.hpp"
-#include "game_misc.hpp"
 #include "game_texture.hpp"
 
 //forward declaration of SDL - related stuff
