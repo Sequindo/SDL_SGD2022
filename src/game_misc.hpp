@@ -20,6 +20,9 @@ namespace GameConstants {
     inline const uint32_t maxTimeBetweenAnimationRefresh = 100u;
     inline const uint32_t minTimeBetweenAnimationRefresh = 1u;
     inline const uint32_t animationFreqStep = 16u;
+    inline const int32_t floorEntityLeftThreshold =
+        GameConstants::floorEntitySquare * -1;
+    inline const uint32_t floorAnimationTicks = 10u;
 
     // Physics - related stuff
     inline const double playerAcceleration = 5u;

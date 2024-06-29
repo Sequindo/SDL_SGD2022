@@ -74,25 +74,20 @@ void Game::init(bool fullscreen) {
             &slaughterhouseAssetsTexture);
         slaughterhouseEntity->offsetSrcRect(107, 39);
 
-        auto numFloorTilesRow =
+        numFloorTilesColumn =
             static_cast<uint32_t>(GameConstants::height /
                                   GameConstants::floorEntitySquare) +
             1;
-        auto numFloorTilesColumn =
+        numFloorTilesRow =
             static_cast<uint32_t>(GameConstants::width /
                                   GameConstants::floorEntitySquare) +
             1;
+        // Append one extra floor tile to the row.
+        numFloorTilesRow++;
+
         auto totalTilesNum = numFloorTilesRow * numFloorTilesColumn;
         this->floorRectangles.resize(totalTilesNum);
-        auto recIdx = 0u;
-        for (uint32_t y = 0; y < numFloorTilesRow; y++) {
-          for (uint32_t x = 0; x < numFloorTilesColumn; x++) {
-            auto &rec = this->floorRectangles.at(recIdx++);
-            rec.y = y * GameConstants::floorEntitySquare;
-            rec.x = x * GameConstants::floorEntitySquare;
-            rec.h = rec.w = GameConstants::floorEntitySquare;
-          }
-        }
+        resetFlooring();
 
     } else {
         std::cerr << SDL_GetError() << std::endl;
@@ -134,17 +129,55 @@ void Game::handleEvents() {
     }
 }
 
+void Game::resetFlooring() {
+  uint32_t recIdx = 0u;
+  for (uint32_t y = 0; y < numFloorTilesColumn; y++) {
+    for (uint32_t x = 0; x < numFloorTilesRow; x++) {
+      auto &rec = this->floorRectangles.at(recIdx++);
+      rec.y = y * GameConstants::floorEntitySquare;
+      rec.x = x * GameConstants::floorEntitySquare;
+      rec.h = rec.w = GameConstants::floorEntitySquare;
+    }
+  }
+}
+
+// This moves not only the floortiles, but makes the whole map advance,
+// including obstacles.
+void Game::updateFlooring() {
+  bool reset = false;
+
+  // Sufficient to check the first tile in a vector, i.e. the top-left corner
+  if (floorRectangles[0].x <= GameConstants::floorEntityLeftThreshold) {
+    resetFlooring();
+  } else {
+    for (auto &rec : floorRectangles) {
+      rec.x--;
+    }
+  }
+}
+
 void Game::update(uint32_t &animationTicks) {
-  physicState.isPlayerMoving() ? playerEntity->setCowMoving()
-                               : playerEntity->setCowResting();
-  if (animationTicks < this->physicState.getAnimationSpeed()) {
+  auto minTicksRequired =
+      std::min<uint32_t>(this->physicState.getAnimationSpeed(),
+                         GameConstants::floorAnimationTicks);
+  if (animationTicks < minTicksRequired) {
     return;
   }
-  physicState.iterationIvoke();
-  playerEntity->updateCowSrcRect();
-  playerEntity->updateDstRectCoords(physicState.getHorizontalSpeed(),
-                                    physicState.getVerticalSpeed());
-  animationTicks = 0u;
+  physicState.isPlayerMoving() ? playerEntity->setCowMoving()
+                               : playerEntity->setCowResting();
+  if (animationTicks >= this->physicState.getAnimationSpeed()) {
+    physicState.iterationIvoke();
+    playerEntity->updateCowSrcRect();
+    playerEntity->updateDstRectCoords(physicState.getHorizontalSpeed(),
+                                      physicState.getVerticalSpeed());
+  }
+  if (animationTicks >= GameConstants::floorAnimationTicks) {
+    this->updateFlooring();
+  }
+  if (animationTicks >= GameConstants::floorAnimationTicks &&
+      animationTicks >= this->physicState.getAnimationSpeed()) {
+    animationTicks = 0u;
+  }
 }
 
 void Game::render() {
@@ -184,8 +217,6 @@ void PhysicStateAndMetadata::iterationIvoke() {
 void PhysicStateAndMetadata::handleAcceleration() {
   // Update animation speed
   // printf("Current animation set at %du\n", this->animationSpeed);
-  printf("Current horizontal speed set at %du\n", this->horizontalSpeed);
-  printf("Current vertical speed set at %du\n", this->verticalSpeed);
   if (accVecHorizontal != AccelerationDirection::STALL ||
       accVecVertical != AccelerationDirection::STALL) {
     if (animationSpeed <= GameConstants::animationFreqStep) {

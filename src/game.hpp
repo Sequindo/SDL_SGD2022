@@ -69,24 +69,29 @@ public:
     void init(bool fullscreen);
     void handleEvents();
     void update(uint32_t &animationTicks);
-    void updateFlooring();
     void render();
     void clear();
     bool gameRunning();
-private:
-  PhysicStateAndMetadata physicState{};
-  bool isGameRunning = true;
-  std::unique_ptr<CowEntity> playerEntity = nullptr;
-  std::unique_ptr<GameEntity> slaughterhouseEntity = nullptr;
 
-  // SDL stuff
-  SDL_Window *window = nullptr;
-  SDL_Renderer *renderer = nullptr;
+    void resetFlooring();
+    void updateFlooring();
 
-  GameTexture cowRestTexture{};
-  GameTexture cowMovingTexture{};
-  GameTexture slaughterhouseAssetsTexture{};
-  std::vector<SDL_Rect> floorRectangles{};
+  private:
+    PhysicStateAndMetadata physicState{};
+    bool isGameRunning = true;
+    std::unique_ptr<CowEntity> playerEntity = nullptr;
+    std::unique_ptr<GameEntity> slaughterhouseEntity = nullptr;
+
+    // SDL stuff
+    SDL_Window *window = nullptr;
+    SDL_Renderer *renderer = nullptr;
+
+    GameTexture cowRestTexture{};
+    GameTexture cowMovingTexture{};
+    GameTexture slaughterhouseAssetsTexture{};
+    std::vector<SDL_Rect> floorRectangles{};
+    uint32_t numFloorTilesColumn{};
+    uint32_t numFloorTilesRow{};
 };
 
 #endif
