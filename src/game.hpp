@@ -5,6 +5,9 @@
 #define COW_MOVING_FRAME_COLS 4
 #define COW_RESTING_FRAME_ROWS 4
 #define COW_RESTING_FRAME_COLS 3
+#define SLAUGHTERHOUSE_FLOOR_FRAME_ROWS 1
+#define SLAUGHTERHOUSE_FLOOR_FRAME_COLS 1
+#define SINGLE_TEXTURE_IDX 0
 
 #include <memory>
 
@@ -18,8 +21,6 @@ struct SDL_Window;
 typedef struct SDL_Window SDL_Window;
 
 class GameEntity;
-
-namespace Pos2D {}
 
 class GameState {
 public:
@@ -68,6 +69,7 @@ public:
     void init(bool fullscreen);
     void handleEvents();
     void update(uint32_t &animationTicks);
+    void updateFlooring();
     void render();
     void clear();
     bool gameRunning();
@@ -75,6 +77,7 @@ private:
   PhysicStateAndMetadata physicState{};
   bool isGameRunning = true;
   std::unique_ptr<CowEntity> playerEntity = nullptr;
+  std::unique_ptr<GameEntity> slaughterhouseEntity = nullptr;
 
   // SDL stuff
   SDL_Window *window = nullptr;
@@ -82,6 +85,7 @@ private:
 
   GameTexture cowRestTexture{};
   GameTexture cowMovingTexture{};
+  GameTexture slaughterhouseAssetsTexture{};
 };
 
 #endif

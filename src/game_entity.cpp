@@ -27,6 +27,11 @@ const SDL_Rect &GameEntity::getSrcRect() { return srcRect; }
 
 const SDL_Rect &GameEntity::getDstRect() { return dstRect; }
 
+void GameEntity::offsetSrcRect(uint32_t x, uint32_t y) {
+  this->srcRect.h += y;
+  this->srcRect.w += x;
+}
+
 void GameEntity::updateSrcRect(uint32_t textureIdx) {
   auto tex = entityTextures.at(textureIdx);
   srcRect.x = currentRow * srcRect.w;

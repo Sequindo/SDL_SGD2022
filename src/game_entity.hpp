@@ -28,6 +28,7 @@ public:
   GameTexture *getTexture(uint32_t idx);
   const SDL_Rect &getSrcRect();
   const SDL_Rect &getDstRect();
+  void offsetSrcRect(uint32_t x, uint32_t y);
   void updateSrcRect(uint32_t textureIdx);
   void updateDstRectCoords(int32_t dX, int32_t dY);
 };

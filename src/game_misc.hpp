@@ -5,10 +5,16 @@ namespace GameConstants {
     inline const char* title {"Untitled Cow Gore Game"};
     inline const uint32_t width = 1366;
     inline const uint32_t height = 768;
+
+    // Player - related constants
     inline const uint32_t playerFrameH = 512;
     inline const uint32_t playerFrameW = 720;
     inline const uint32_t playerEntityH = 128;
     inline const uint32_t playerEntityW = 180;
+
+    // Slaughterhouse flooring - related constants
+    inline const uint32_t floorFrameSquare = 856;
+    inline const uint32_t floorEntitySquare = 128;
 
     // Animation - related stuff
     inline const uint32_t maxTimeBetweenAnimationRefresh = 100u;

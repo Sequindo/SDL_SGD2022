@@ -46,6 +46,18 @@ void Game::init(bool fullscreen) {
           cowMovingTexture.setColNum(COW_MOVING_FRAME_COLS);
           SDL_FreeSurface(tmpSurface);
         }
+        {
+          // Initialize slaughterhouse assets
+          SDL_Surface *tmpSurface =
+              IMG_Load("../resources/spritesheets/TRAPS.png");
+          slaughterhouseAssetsTexture.setTexture(
+              SDL_CreateTextureFromSurface(renderer, tmpSurface));
+          slaughterhouseAssetsTexture.setRowNum(
+              SLAUGHTERHOUSE_FLOOR_FRAME_ROWS);
+          slaughterhouseAssetsTexture.setColNum(
+              SLAUGHTERHOUSE_FLOOR_FRAME_COLS);
+          SDL_FreeSurface(tmpSurface);
+        }
 
         // Initialize player
         this->playerEntity = std::make_unique<CowEntity>(
@@ -53,6 +65,14 @@ void Game::init(bool fullscreen) {
             GameConstants::playerEntityH, GameConstants::playerEntityW);
         playerEntity->placeTextureForEntity(&cowRestTexture);
         playerEntity->placeTextureForEntity(&cowMovingTexture);
+
+        // Initialize flooring
+        this->slaughterhouseEntity = std::make_unique<GameEntity>(
+            GameConstants::floorFrameSquare, GameConstants::floorFrameSquare,
+            GameConstants::floorEntitySquare, GameConstants::floorEntitySquare);
+        slaughterhouseEntity->placeTextureForEntity(
+            &slaughterhouseAssetsTexture);
+        slaughterhouseEntity->offsetSrcRect(107, 39);
 
     } else {
         std::cerr << SDL_GetError() << std::endl;
@@ -109,6 +129,21 @@ void Game::update(uint32_t &animationTicks) {
 
 void Game::render() {
   SDL_RenderClear(renderer);
+  // Render flooring
+  for (uint32_t y = 0u; y < GameConstants::height;
+       y += GameConstants::floorEntitySquare) {
+    for (uint32_t x = 0u; x < GameConstants::width;
+         x += GameConstants::floorEntitySquare) {
+      slaughterhouseEntity->updateDstRectCoords(x, y);
+      SDL_RenderCopy(
+          renderer,
+          slaughterhouseEntity->getTexture(SINGLE_TEXTURE_IDX)->getTexture(),
+          &slaughterhouseEntity->getSrcRect(),
+          &slaughterhouseEntity->getDstRect());
+      SDL_RenderPresent(renderer);
+    }
+  }
+
   // Render a player
   SDL_RenderCopy(renderer, playerEntity->getCowTexture()->getTexture(),
                  &playerEntity->getSrcRect(), &playerEntity->getDstRect());
