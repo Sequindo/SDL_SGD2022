@@ -2,6 +2,7 @@
 #include <memory>
 #include <thread>
 
+#include "SDL_timer.h"
 #include "game.hpp"
 
 std::unique_ptr<Game> game = nullptr;
@@ -11,12 +12,17 @@ int main() {
   GameState gameState(60.0);
   std::chrono::steady_clock::time_point currentTime =
       std::chrono::steady_clock::now();
-
+  uint32_t ticksAccumulator = 0u;
+  uint32_t prevTicks = SDL_GetTicks();
+  uint32_t currTicks = 0u;
   while (game->gameRunning()) {
     GameState newGameState = GameState::physics(gameState);
     gameState = newGameState;
     game->handleEvents();
-    game->update();
+    currTicks = SDL_GetTicks();
+    ticksAccumulator += currTicks - prevTicks;
+    game->update(ticksAccumulator);
+    prevTicks = currTicks;
     bool frameskip = false;
     auto nextTime =
         currentTime + std::chrono::microseconds(

@@ -5,7 +5,7 @@
 
 #include "SDL_rect.h"
 
-#define START_FRAME_IDX 1u
+#define START_FRAME_IDX 0u
 
 struct SDL_Rect;
 typedef struct SDL_Rect SDL_Rect;
@@ -17,7 +17,8 @@ class GameEntity {
   SDL_Rect dstRect{};
   std::vector<GameTexture *> entityTextures{};
 
-  uint32_t currentFrame = START_FRAME_IDX;
+  uint32_t currentRow = START_FRAME_IDX;
+  uint32_t currentCol = START_FRAME_IDX;
 
 public:
   GameEntity(uint32_t singleFrameH, uint32_t singleFrameW, uint32_t entityH,

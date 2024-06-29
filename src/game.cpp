@@ -32,14 +32,17 @@ void Game::init(bool fullscreen) {
                        "at-rest-facing-right-x720-y512-per-frame.png");
           cowRestTexture.setTexture(
               SDL_CreateTextureFromSurface(renderer, tmpSurface));
-          cowRestTexture.setFrameCount(COW_RESTING_FRAME_NUM);
+          cowRestTexture.setRowNum(COW_RESTING_FRAME_ROWS);
+          cowRestTexture.setColNum(COW_RESTING_FRAME_COLS);
           SDL_FreeSurface(tmpSurface);
-
-          tmpSurface =
-              IMG_Load("../resources/cowspritesheetx=720pxY=512px.png");
+        }
+        {
+          SDL_Surface *tmpSurface = IMG_Load(
+              "../resources/spritesheets/cowspritesheetx=720pxY=512px.png");
           cowMovingTexture.setTexture(
               SDL_CreateTextureFromSurface(renderer, tmpSurface));
-          cowRestTexture.setFrameCount(COW_MOVING_FRAME_NUM);
+          cowMovingTexture.setRowNum(COW_MOVING_FRAME_ROWS);
+          cowMovingTexture.setColNum(COW_MOVING_FRAME_COLS);
           SDL_FreeSurface(tmpSurface);
         }
 
@@ -68,7 +71,13 @@ void Game::handleEvents() {
     }
 }
 
-void Game::update() { playerEntity->updateCowSrcRect(); }
+void Game::update(uint32_t &animationTicks) {
+  if (animationTicks < GameConstants::minTimeBetweenAnimationRefresh) {
+    return;
+  }
+  playerEntity->updateCowSrcRect();
+  animationTicks = 0u;
+}
 
 void Game::render() {
     SDL_RenderClear(renderer);

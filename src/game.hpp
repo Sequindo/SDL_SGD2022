@@ -1,8 +1,11 @@
 #ifndef game_hpp
 #define game_hpp
 
-#define COW_MOVING_FRAME_NUM 16
-#define COW_RESTING_FRAME_NUM 12
+#define COW_MOVING_FRAME_ROWS 4
+#define COW_MOVING_FRAME_COLS 4
+
+#define COW_RESTING_FRAME_ROWS 4
+#define COW_RESTING_FRAME_COLS 3
 
 #include <memory>
 
@@ -19,13 +22,14 @@ class GameEntity;
 
 namespace GameConstants {
     inline const char* title {"Untitled Cow Gore Game"};
-    inline const int width = 1366;
-    inline const int height = 768;
+    inline const uint32_t width = 1366;
+    inline const uint32_t height = 768;
+    inline const uint32_t playerFrameH = 512;
+    inline const uint32_t playerFrameW = 720;
+    inline const uint32_t playerEntityH = 128;
+    inline const uint32_t playerEntityW = 180;
 
-    inline const int playerFrameH = 512;
-    inline const int playerFrameW = 720;
-    inline const int playerEntityH = 128;
-    inline const int playerEntityW = 180;
+    inline const uint32_t minTimeBetweenAnimationRefresh = 50u;
 }
 
 class GameState {
@@ -54,7 +58,7 @@ public:
     ~Game();
     void init(bool fullscreen);
     void handleEvents();
-    void update();
+    void update(uint32_t &animationTicks);
     void render();
     void clear();
     bool gameRunning();

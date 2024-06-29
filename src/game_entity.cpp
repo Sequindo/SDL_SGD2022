@@ -3,6 +3,8 @@
 
 GameEntity::GameEntity(uint32_t singleFrameH, uint32_t singleFrameW,
                        uint32_t entityH, uint32_t entityW) {
+  this->entityTextures.reserve(2u);
+
   srcRect.h = singleFrameH;
   srcRect.w = singleFrameW;
   srcRect.x = 0u;
@@ -25,11 +27,17 @@ const SDL_Rect &GameEntity::getSrcRect() { return srcRect; }
 const SDL_Rect &GameEntity::getDstRect() { return dstRect; }
 
 void GameEntity::updateSrcRect(uint32_t textureIdx) {
-  if (++currentFrame == entityTextures.at(textureIdx)->getFrameCount()) {
-    currentFrame = START_FRAME_IDX;
+  auto tex = entityTextures.at(textureIdx);
+  srcRect.x = currentRow * srcRect.w;
+  srcRect.y = currentCol * srcRect.h;
+
+  if (++currentRow == tex->getRowNum()) {
+    currentRow = START_FRAME_IDX;
+    ++currentCol;
+    if (currentCol == tex->getColNum()) {
+      currentCol = START_FRAME_IDX;
+    }
   }
-  srcRect.y = currentFrame * srcRect.h;
-  srcRect.x = currentFrame * srcRect.w;
 }
 
 void CowEntity::setCowResting() { this->textureIndex = 0u; }

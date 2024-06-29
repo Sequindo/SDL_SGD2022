@@ -6,14 +6,17 @@ typedef struct SDL_Texture SDL_Texture;
 
 class GameTexture {
   SDL_Texture *texture = nullptr;
-  uint32_t frameCount = 0u;
+  uint32_t rowNum = 0u;
+  uint32_t colNum = 0u;
 
 public:
   GameTexture() {}
   void setTexture(SDL_Texture *other) { texture = other; }
-  void setFrameCount(uint32_t other) { frameCount = other; }
+  void setRowNum(uint32_t other) { rowNum = other; }
+  void setColNum(uint32_t other) { colNum = other; }
   SDL_Texture *getTexture() { return texture; }
-  uint32_t getFrameCount() { return frameCount; }
+  uint32_t getRowNum() { return rowNum; }
+  uint32_t getColNum() { return colNum; }
 };
 
 #endif
